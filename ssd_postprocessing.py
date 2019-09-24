@@ -194,6 +194,7 @@ with tf.Session() as sess:
     pred_box   = sess.run(ENDPOINT_BOX  , feed_dict={INPUT_TENSOR_NAME: test_image})
 
 # get box specs (scale, aspect_ratio)
+# for SSDs with 6 layers, the number of anchor boxes are [3,6,6,6,6,6]
 box_specs = create_ssd_anchors(num_layers=NUM_SSD_LAYERS, min_scale=MIN_SCALE, max_scale=MAX_SCALE)
 
 ## Test
