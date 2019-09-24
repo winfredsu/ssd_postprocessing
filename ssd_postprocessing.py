@@ -124,7 +124,7 @@ def draw_bbox(image, box):
     (left, right, top, bottom) = (xmin * im_width, xmax * im_width,
                                   ymin * im_height, ymax * im_height)
     draw.line([(left, top), (left, bottom), (right, bottom),
-             (right, top), (left, top)], width=10, fill='red')
+             (right, top), (left, top)], width=4, fill='blue')
     image.show()
 
 def decode(encoded_box, anchor_box):
@@ -176,6 +176,16 @@ def get_anchor_box_from_preds(fmap_shape, pred_id, box_spec):
     wa = scale*np.sqrt(ratio)
     ha = scale/np.sqrt(ratio)
 
+    # handle the non-square input with square anchor boxes
+    # IMAGE_SIZE = [H,W]
+    # the anchor boxes in the training process are square and relative to min(H,W)
+    # we need to re-scale the ha or wa here
+    # so that the follow-up scripts can treat (ha,wa) as ratios relative to (H,W) 
+    if IMAGE_SIZE[0]>IMAGE_SIZE[1]: # H>W
+      ha *= (IMAGE_SIZE[1]/IMAGE_SIZE[0])
+    else: # W>H
+      wa *= (IMAGE_SIZE[0]/IMAGE_SIZE[1])
+
     return [ycenter_a, xcenter_a, ha, wa]
 
 # load graph
@@ -211,7 +221,6 @@ boxes = boxes.reshape([preds_shape[0], preds_shape[1], -1, 4])
 # discard the backgrounds in class predictions (0 for the background)
 preds = preds[:,:,:,1:]
 # find the id of max score [y,x,anchor_id]
-print(np.max(preds))
 pred_id = np.unravel_index(np.argmax(preds), preds.shape)
 # get anchor box from pred_id
 anchorbox = get_anchor_box_from_preds(preds.shape, pred_id, box_specs[layer_id])
