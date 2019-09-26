@@ -5,12 +5,21 @@ import numpy as np
 import PIL
 import PIL.ImageDraw as ImageDraw
 import os
+import argparse
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' # disable GPU info
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Do ssd postprocessing')
+    parser.add_argument('-i', '--input_path', default='.', help='input image')
+    parser.add_argument('-o', '--output_path', default='.', help='output image')
+    args = parser.parse_args()
 
 ##################################################################
 # GENERAL DEFINES
 INFERENCE_GRAPH = 'oiltank_mnetv2_0.5_ssd.pb'
-TEST_IMAGE = './test_images/5.jpg'
+INPUT_IMAGE = args.input_path
+OUTPUT_IMAGE = args.output_path
 IMAGE_SIZE = [270,480] # [H,W]
 INPUT_TENSOR_NAME = 'normalized_input_image_tensor:0'
 
@@ -137,13 +146,14 @@ def draw_bboxes(boxes):
     input image: path to image
     input boxes: 2d list, [NUM_BOXES, 4]
     """
-    image = PIL.Image.open(TEST_IMAGE)
+    image = PIL.Image.open(INPUT_IMAGE)
     draw = PIL.ImageDraw.Draw(image)
 
     for box in boxes:
         draw_bbox(image.size, draw, box)
 
     image.show()
+    image.save(OUTPUT_IMAGE)
 
 def decode(encoded_box, anchor_box):
     """
@@ -305,7 +315,7 @@ tf.import_graph_def(gd, name='')
 
 # prepare input image ([-1,1), NHWC)
 # NOTE: PIL.resize() has [W,H] as param, but the shape of the result is [H,W,C]
-test_image = np.array([np.array(PIL.Image.open(TEST_IMAGE).resize([480,270])).astype(np.float)/128-1])
+test_image = np.array([np.array(PIL.Image.open(INPUT_IMAGE).resize([480,270])).astype(np.float)/128-1])
 
 # eval the endpoints
 g = tf.get_default_graph()
