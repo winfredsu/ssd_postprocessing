@@ -285,7 +285,7 @@ def calc_iou(box1, box2):
     # calc the intersection area
     intersection_area = max(0., xx2-xx1) * max(0., yy2-yy1)
 
-    return intersection_area / (area1+area2-intersection_area)+1e-6
+    return intersection_area / (area1+area2-intersection_area+1e-6)
 
 def non_maximum_supression(candidates, threshold=NMS_THRESHOLD):
     """
